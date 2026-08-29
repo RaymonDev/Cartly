@@ -1,0 +1,2387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f6f8f4">
+<title>Cartly</title>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCfAs0BTsy4qQOld_mX-_4ev4rMQtiqh08",
+        authDomain: "cartly-shoplist.firebaseapp.com",
+        projectId: "cartly-shoplist",
+        storageBucket: "cartly-shoplist.firebasestorage.app",
+        messagingSenderId: "252592380108",
+        appId: "1:252592380108:web:275116a3488a4afc364a69"
+    };
+</script>
+
+<style>
+    :root {
+        --bg: #f6f8f4;
+        --card: #ffffff;
+        --ink: #1c2a1f;
+        --ink-soft: #5b6b5e;
+        --line: #e4ebe2;
+        --green: #3a9d5d;
+        --green-deep: #2f7d4a;
+        --green-tint: #eaf5ee;
+        --gold: #e0a72f;
+        --danger: #d9534f;
+        --check: #9aa7a0;
+        --radius: 16px;
+        --shadow: 0 1px 3px rgba(28,42,31,.06),0 4px 16px rgba(28,42,31,.05);
+    }
+    
+    * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    html, body {
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        min-height: 100dvh;
+        padding-bottom: 120px;
+        overscroll-behavior-y: contain;
+    }
+
+    header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(246, 248, 244, .9);
+        backdrop-filter: saturate(180%) blur(12px);
+        -webkit-backdrop-filter: saturate(180%) blur(12px);
+        border-bottom: 1px solid var(--line);
+        padding: 14px 18px 12px;
+    }
+    
+    .titlebar {
+        display: grid;
+        grid-template-columns: 60px 1fr 44px;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .lang-btn {
+        grid-column: 1;
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        border-radius: 999px;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ink);
+        transition: .12s;
+    }
+    
+    .lang-btn:active {
+        transform: scale(.95);
+    }
+    
+    .lang-btn .chev {
+        font-size: 9px;
+        color: var(--ink-soft);
+    }
+    
+    h1 {
+        font-size: 23px;
+        font-weight: 700;
+        letter-spacing: -.02em;
+        margin: 0;
+        text-align: center;
+        grid-column: 2;
+    }
+    
+    h1 .dot {
+        color: var(--green);
+    }
+    
+    .avatar {
+        grid-column: 3;
+        justify-self: end;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        background: var(--green);
+        color: #fff;
+        font-family: inherit;
+        font-size: 17px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow);
+        position: relative;
+        transition: .12s;
+    }
+    
+    .avatar:active {
+        transform: scale(.94);
+    }
+    
+    .avatar .sync-dot {
+        position: absolute;
+        bottom: -1px;
+        right: -1px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid var(--bg);
+        background: var(--green);
+    }
+    
+    .avatar .sync-dot.local {
+        background: #e0a72f;
+    }
+    
+    .sync {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .02em;
+        padding: 4px 9px;
+        border-radius: 999px;
+        white-space: nowrap;
+        background: var(--green-tint);
+        color: var(--green-deep);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .sync.local {
+        background: #fdf3e7;
+        color: #a6702a;
+    }
+    
+    .sync i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        display: inline-block;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 6px;
+        margin-top: 12px;
+    }
+    
+    .tab {
+        flex: 1;
+        text-align: center;
+        padding: 9px 0;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        background: transparent;
+        color: var(--ink-soft);
+        border-radius: 10px;
+        transition: .15s;
+    }
+    
+    .tab.active {
+        background: var(--green);
+        color: #fff;
+        box-shadow: var(--shadow);
+    }
+
+    main {
+        padding: 8px 14px 0;
+    }
+
+    .adder {
+        margin: 10px 2px 8px;
+    }
+    
+    .adder-input {
+        display: block;
+        width: 100%;
+        font-family: inherit;
+        font-size: 16px;
+        padding: 14px 15px;
+        margin-bottom: 8px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card);
+        color: var(--ink);
+        outline: none;
+        transition: .15s;
+    }
+    
+    .adder-input:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-tint);
+    }
+    
+    .adder-row {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+    }
+    
+    #addBtn {
+        flex: 0 0 52px;
+        border: none;
+        border-radius: 14px;
+        background: var(--green);
+        color: #fff;
+        font-size: 26px;
+        font-weight: 300;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+        transition: .12s;
+    }
+    
+    #addBtn:active {
+        transform: scale(.94);
+        background: var(--green-deep);
+    }
+    
+    .adder-cat {
+        flex: 1 1 auto;
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card);
+        cursor: pointer;
+        outline: none;
+        transition: .15s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 30px 12px 13px;
+        position: relative;
+    }
+    
+    .adder-cat:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-tint);
+    }
+    
+    .adder-cat .cat-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        flex: 0 0 auto;
+        box-shadow: 0 0 0 1.5px var(--line);
+    }
+    
+    .adder-cat-label {
+        flex: 1;
+        min-width: 0;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink);
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .adder-cat::after {
+        content: "▾";
+        position: absolute;
+        top: 50%;
+        right: 13px;
+        transform: translateY(-50%);
+        font-size: 11px;
+        color: var(--ink-soft);
+        pointer-events: none;
+    }
+
+    .cat-scroll {
+        display: flex;
+        gap: 7px;
+        overflow-x: auto;
+        padding: 11px 2px 3px;
+        margin: 0 -2px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .cat-scroll::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .cat-pill {
+        flex: 0 0 auto;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 7px 13px;
+        border-radius: 999px;
+        cursor: pointer;
+        white-space: nowrap;
+        background: var(--card);
+        border: 1.5px solid var(--line);
+        color: var(--ink-soft);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: .12s;
+    }
+    
+    .cat-pill .cat-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+    }
+    
+    .cat-pill.sel {
+        color: #fff;
+        border-color: transparent;
+    }
+    
+    .cat-pill.sel .cat-dot {
+        background: #fff !important;
+    }
+    
+    .cat-pill.add-new {
+        border-style: dashed;
+    }
+
+    .modal-back {
+        position: fixed;
+        inset: 0;
+        z-index: 120;
+        background: rgba(28,42,31,.38);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .2s;
+    }
+    
+    .modal-back.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    .modal {
+        width: 100%;
+        max-width: 460px;
+        background: var(--card);
+        border-radius: 22px 22px 0 0;
+        padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+        transform: translateY(20px);
+        transition: transform .22s cubic-bezier(.22,1,.36,1);
+        box-shadow: 0 -8px 40px rgba(28,42,31,.18);
+    }
+    
+    .modal-back.open .modal {
+        transform: translateY(0);
+    }
+    
+    .modal h2 {
+        margin: 0 0 4px;
+        font-size: 18px;
+        font-weight: 700;
+    }
+    
+    .modal p.sub {
+        margin: 0 0 16px;
+        font-size: 13px;
+        color: var(--ink-soft);
+    }
+    
+    .modal input {
+        width: 100%;
+        font-family: inherit;
+        font-size: 16px;
+        padding: 14px;
+        margin-bottom: 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--bg);
+        color: var(--ink);
+        outline: none;
+    }
+    
+    .modal input:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-tint);
+        background: var(--card);
+    }
+    
+    .modal-btns {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .modal-btns button {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .12s;
+    }
+    
+    .btn-cancel {
+        background: var(--bg);
+        color: var(--ink-soft);
+    }
+    
+    .btn-cancel:active {
+        background: var(--line);
+    }
+    
+    .btn-ok {
+        background: var(--green);
+        color: #fff;
+    }
+    
+    .btn-ok:active {
+        background: var(--green-deep);
+    }
+    
+    .btn-ok:disabled {
+        background: #cdd6cf;
+    }
+
+    .cat-options {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 52vh;
+        overflow-y: auto;
+        margin-bottom: 4px;
+    }
+    
+    .cat-opt {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 13px 14px;
+        border-radius: 12px;
+        background: var(--bg);
+        border: 1.5px solid transparent;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+        transition: .12s;
+    }
+    
+    .cat-opt .cat-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex: 0 0 auto;
+    }
+    
+    .cat-opt.sel {
+        border-color: var(--green);
+        background: var(--green-tint);
+    }
+    
+    .cat-opt .tick {
+        margin-left: auto;
+        color: var(--green);
+        font-weight: 700;
+        opacity: 0;
+    }
+    
+    .cat-opt.sel .tick {
+        opacity: 1;
+    }
+    
+    .cat-opt.add-row {
+        color: var(--green-deep);
+        font-weight: 700;
+        border: 1.5px dashed var(--line);
+        background: var(--card);
+    }
+
+    .manage-row {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 11px 13px;
+        border-radius: 12px;
+        background: var(--bg);
+        margin-bottom: 6px;
+    }
+    
+    .manage-row .cat-dot {
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        flex: 0 0 auto;
+    }
+    
+    .manage-row .mname {
+        flex: 1;
+        min-width: 0;
+        font-size: 15px;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .manage-row .mname input {
+        width: 100%;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 500;
+        border: none;
+        border-bottom: 2px solid var(--green);
+        background: transparent;
+        outline: none;
+        padding: 0 0 2px;
+        color: var(--ink);
+    }
+    
+    .manage-row .mcount {
+        font-size: 11px;
+        color: var(--ink-soft);
+        font-weight: 600;
+        background: var(--card);
+        padding: 2px 7px;
+        border-radius: 6px;
+    }
+    
+    .manage-row button {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 5px;
+        border-radius: 8px;
+        line-height: 1;
+    }
+    
+    .manage-row button:active {
+        background: var(--line);
+    }
+    
+    .manage-row .del:disabled {
+        opacity: .28;
+        cursor: not-allowed;
+    }
+    
+    .manage-row .del:disabled:active {
+        background: transparent;
+    }
+
+    .faves {
+        margin: 8px 2px 18px;
+    }
+    
+    .faves-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink-soft);
+        margin: 0 0 8px;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+    
+    .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+    }
+    
+    .chip {
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 7px 13px;
+        border-radius: 999px;
+        cursor: pointer;
+        background: var(--card);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: .12s;
+    }
+    
+    .chip:active {
+        transform: scale(.95);
+    }
+    
+    .chip .plus {
+        color: var(--green);
+        font-weight: 700;
+    }
+    
+    .chip .cat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .group {
+        margin-bottom: 18px;
+    }
+    
+    .group-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 4px 8px;
+    }
+    
+    .group-head .cat-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        flex: 0 0 auto;
+    }
+    
+    .group-head span {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: .02em;
+        color: var(--ink);
+    }
+    
+    .group-head small {
+        color: var(--ink-soft);
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .row-wrap {
+        position: relative;
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 8px;
+        box-shadow: var(--shadow);
+        background: var(--card);
+    }
+    
+    .act-fav, .act-del {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        color: #fff;
+        font-weight: 600;
+        font-size: 14px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .1s;
+    }
+    
+    .act-fav {
+        background: var(--gold);
+        justify-content: flex-start;
+        padding-left: 22px;
+    }
+    
+    .act-del {
+        background: var(--danger);
+        justify-content: flex-end;
+        padding-right: 22px;
+    }
+    
+    .row-wrap.swipe-right .act-fav {
+        opacity: 1;
+    }
+    
+    .row-wrap.swipe-left .act-del {
+        opacity: 1;
+    }
+    
+    .row {
+        position: relative;
+        background: var(--card);
+        z-index: 1;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 15px;
+        margin: -2px 0;
+        touch-action: pan-y;
+        transition: transform .22s cubic-bezier(.22,1,.36,1);
+        will-change: transform;
+        border-left: 4px solid transparent;
+    }
+    
+    .qty {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        background: var(--green-tint);
+        border-radius: 10px;
+        padding: 3px;
+    }
+    
+    .qty button {
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: transparent;
+        color: var(--green-deep);
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 8px;
+        font-family: inherit;
+        line-height: 1;
+    }
+    
+    .qty button:active {
+        background: #fff;
+    }
+    
+    .qty span {
+        min-width: 20px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--green-deep);
+    }
+    
+    .row .name {
+        flex: 1;
+        min-width: 0;
+        font-size: 16px;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .row .name input {
+        width: 100%;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 500;
+        border: none;
+        border-bottom: 2px solid var(--green);
+        background: transparent;
+        color: var(--ink);
+        outline: none;
+        padding: 0 0 2px;
+    }
+    
+    .row .fav-mark {
+        flex: 0 0 auto;
+        font-size: 16px;
+        color: var(--gold);
+    }
+
+    .buy-row {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 15px;
+        background: var(--card);
+        border-radius: var(--radius);
+        margin-bottom: 8px;
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        border-left: 4px solid transparent;
+        transition: .15s;
+    }
+    
+    .tickbox {
+        flex: 0 0 26px;
+        height: 26px;
+        border-radius: 8px;
+        border: 2px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: .15s;
+    }
+    
+    .tickbox svg {
+        width: 15px;
+        height: 15px;
+        stroke: #fff;
+        stroke-width: 3.5;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        opacity: 0;
+        transition: .15s;
+    }
+    
+    .buy-row.done .tickbox {
+        background: var(--green);
+        border-color: var(--green);
+    }
+    
+    .buy-row.done .tickbox svg {
+        opacity: 1;
+    }
+    
+    .buy-row .b-name {
+        flex: 1;
+        font-size: 16px;
+        font-weight: 500;
+        transition: .15s;
+    }
+    
+    .buy-row.done .b-name {
+        color: var(--check);
+        text-decoration: line-through;
+    }
+    
+    .buy-row .b-qty {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--green-deep);
+        background: var(--green-tint);
+        padding: 3px 9px;
+        border-radius: 8px;
+    }
+    
+    .buy-row.done .b-qty {
+        color: var(--check);
+        background: var(--bg);
+    }
+
+    .buy-foot {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+        background: linear-gradient(transparent,var(--bg) 30%);
+        z-index: 15;
+    }
+    
+    .buy-foot button {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 16px;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+        transition: .12s;
+        background: var(--green);
+        color: #fff;
+    }
+    
+    .buy-foot button:active {
+        transform: scale(.98);
+        background: var(--green-deep);
+    }
+    
+    .buy-foot button:disabled {
+        background: #cdd6cf;
+        box-shadow: none;
+    }
+    
+    .buy-foot .count {
+        font-size: 12px;
+        text-align: center;
+        color: var(--ink-soft);
+        margin: 0 0 10px;
+        font-weight: 500;
+    }
+
+    .empty {
+        text-align: center;
+        padding: 70px 30px;
+        color: var(--ink-soft);
+    }
+    
+    .empty .em {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+    
+    .empty p {
+        margin: 4px 0;
+        font-size: 15px;
+    }
+    
+    .empty p.sub {
+        font-size: 13px;
+        opacity: .8;
+    }
+
+    .hint {
+        font-size: 11px;
+        color: var(--ink-soft);
+        text-align: center;
+        margin: 2px 4px 14px;
+        opacity: .7;
+    }
+
+    #authScreen {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 22px calc(24px + env(safe-area-inset-bottom));
+        padding-top: calc(24px + env(safe-area-inset-top));
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #authScreen.hidden {
+        display: none;
+    }
+    
+    .auth-lang {
+        position: fixed;
+        top: calc(14px + env(safe-area-inset-top));
+        right: 18px;
+        z-index: 101;
+    }
+    
+    .auth-card {
+        width: 100%;
+        max-width: 400px;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .auth-brand {
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -.03em;
+        color: var(--ink);
+        line-height: 1;
+    }
+    
+    .auth-brand .dot {
+        color: var(--green);
+    }
+    
+    .auth-tagline {
+        margin: 8px 0 32px;
+        font-size: 15px;
+        color: var(--ink-soft);
+        text-align: center;
+        max-width: 280px;
+    }
+    
+    .auth-form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+    
+    .auth-form[hidden] {
+        display: none !important;
+    }
+    
+    .fld {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .fld span {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink-soft);
+        padding-left: 2px;
+    }
+    
+    .fld input {
+        font-family: inherit;
+        font-size: 16px;
+        padding: 14px 15px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card);
+        color: var(--ink);
+        outline: none;
+        transition: .15s;
+        -webkit-appearance: none;
+    }
+    
+    .fld input:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-tint);
+    }
+    
+    .auth-err {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--danger);
+        text-align: center;
+    }
+    
+    .auth-primary {
+        margin-top: 6px;
+        padding: 16px;
+        border: none;
+        border-radius: 14px;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        background: var(--green);
+        color: #fff;
+        box-shadow: var(--shadow);
+        transition: .12s;
+    }
+    
+    .auth-primary:active {
+        transform: scale(.98);
+        background: var(--green-deep);
+    }
+    
+    .auth-switch {
+        margin: 20px 0 0;
+        text-align: center;
+        font-size: 14px;
+        color: var(--ink-soft);
+    }
+    
+    .auth-link {
+        border: none;
+        background: none;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--green-deep);
+        cursor: pointer;
+        padding: 0;
+        text-decoration: underline;
+    }
+    
+    @media (max-height: 640px) {
+        .auth-brand { font-size: 34px; }
+        .auth-tagline { margin: 6px 0 22px; }
+        .auth-form { gap: 11px; }
+        .fld input { padding: 12px 14px; }
+    }
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+    <button id="authLangBtn" class="lang-btn auth-lang" aria-label="Idioma"><span id="authLangLabel">CAT</span><span class="chev">▾</span></button>
+    <div class="auth-card">
+        <div class="auth-brand">Cartly<span class="dot">.</span></div>
+        <p class="auth-tagline" id="authTagline">La compra de casa, compartida.</p>
+
+        <form id="loginForm" class="auth-form" autocomplete="off" onsubmit="return false">
+            <label class="fld"><span id="lblUser1">Nom d'usuari</span>
+                <input id="loginUser" type="text" placeholder="ex. la_meva_casa" autocapitalize="none" autocomplete="username"></label>
+            <label class="fld"><span id="lblPass1">Contrasenya</span>
+                <input id="loginPass" type="password" autocomplete="current-password"></label>
+            <p class="auth-err" id="loginErr" hidden></p>
+            <button id="loginBtn" class="auth-primary" type="submit">Entrar</button>
+            <p class="auth-switch"><span id="noAccountTxt">Encara no tens casa?</span> <button type="button" id="toRegister" class="auth-link">Crea'n una</button></p>
+        </form>
+
+        <form id="registerForm" class="auth-form" autocomplete="off" onsubmit="return false" hidden>
+            <label class="fld"><span id="lblUser2">Nom d'usuari</span>
+                <input id="regUser" type="text" placeholder="ex. la_meva_casa" autocapitalize="none" autocomplete="username"></label>
+            <label class="fld"><span id="lblHouse">Nom de la casa</span>
+                <input id="regHouse" type="text" placeholder="ex. La meva casa" autocomplete="off"></label>
+            <label class="fld"><span id="lblPass2">Contrasenya</span>
+                <input id="regPass" type="password" autocomplete="new-password"></label>
+            <label class="fld"><span id="lblPass2b">Confirma la contrasenya</span>
+                <input id="regPass2" type="password" autocomplete="new-password"></label>
+            <p class="auth-err" id="regErr" hidden></p>
+            <button id="registerBtn" class="auth-primary" type="submit">Crear casa</button>
+            <p class="auth-switch"><span id="haveAccountTxt">Ja tens compte?</span> <button type="button" id="toLogin" class="auth-link">Entra</button></p>
+        </form>
+    </div>
+</div>
+
+<header>
+    <div class="titlebar">
+        <button id="langBtn" class="lang-btn" aria-label="Idioma"><span id="langLabel">CAT</span><span class="chev">▾</span></button>
+        <h1 id="appTitle">Cartly<span class="dot">.</span></h1>
+        <button id="avatar" class="avatar" aria-label="Cuenta de la casa">
+            <span id="avatarInitial">·</span>
+            <span id="syncDot" class="sync-dot local"></span>
+        </button>
+    </div>
+    <div class="tabs">
+        <button id="tabList" class="tab active">Cesta</button>
+        <button id="tabBuy" class="tab">Lista</button>
+    </div>
+</header>
+
+<main>
+    <section id="viewList">
+        <div class="adder">
+            <input id="newInput" class="adder-input" type="text" placeholder="Añadir producto…" autocomplete="off" enterkeyhint="done">
+            <div class="adder-row">
+                <button id="adderCat" class="adder-cat" aria-label="Categoría del producto">
+                    <span class="cat-dot" id="adderCatDot"></span>
+                    <span class="adder-cat-label" id="adderCatLabel">Sin categoría</span>
+                </button>
+                <button id="addBtn" aria-label="Añadir">+</button>
+            </div>
+            <div id="catScroll" class="cat-scroll"></div>
+        </div>
+
+        <div id="favesBox" class="faves" hidden>
+            <p class="faves-label" id="favesLabel">Habituales</p>
+            <div id="favesChips" class="chips"></div>
+        </div>
+
+        <div id="listBody"></div>
+        <p class="hint" id="listHint" hidden>Desliza → para favorito · desliza ← para borrar · toca el nombre para editar</p>
+    </section>
+
+    <section id="viewBuy" hidden>
+        <div id="buyBody"></div>
+    </section>
+</main>
+
+<div id="buyFoot" class="buy-foot" hidden>
+    <p class="count" id="buyCount"></p>
+    <button id="clearCompletedBtn" disabled>Quitar lo comprado</button>
+</div>
+
+<div id="pickBack" class="modal-back">
+    <div class="modal">
+        <h2 id="pickTitle">Categoría del producto</h2>
+        <p class="sub" id="pickSub">Se asignará a lo próximo que añadas.</p>
+        <div id="pickOptions" class="cat-options"></div>
+    </div>
+</div>
+
+<div id="newCatBack" class="modal-back">
+    <div class="modal">
+        <h2 id="newCatTitle">Nueva categoría</h2>
+        <p class="sub" id="newCatSub">Dale un nombre. Tendrá su propio color.</p>
+        <input id="newCatInput" type="text" placeholder="Ej. Snacks" autocomplete="off" enterkeyhint="done" maxlength="30">
+        <div class="modal-btns">
+            <button class="btn-cancel" id="newCatCancel">Cancelar</button>
+            <button class="btn-ok" id="newCatOk" disabled>Crear</button>
+        </div>
+    </div>
+</div>
+
+<div id="accountBack" class="modal-back">
+    <div class="modal">
+        <div style="display:flex;align-items:center;gap:13px;margin-bottom:6px">
+            <div id="accAvatar" style="width:52px;height:52px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex:0 0 auto">·</div>
+            <div style="min-width:0">
+                <h2 id="accName" style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Casa</h2>
+                <p class="sub" id="accStatus" style="margin:2px 0 0">Modo local</p>
+            </div>
+        </div>
+        <div class="modal-btns" style="margin-top:16px">
+            <button class="btn-ok" id="accLogout" style="background:var(--danger)">Cerrar sesión</button>
+        </div>
+    </div>
+</div>
+
+<div id="manageBack" class="modal-back">
+    <div class="modal">
+        <h2 id="manageTitle">Categorías</h2>
+        <p class="sub" id="manageSub">Renombra o elimina. No se puede eliminar una con productos.</p>
+        <div id="manageList" class="cat-options"></div>
+        <div class="modal-btns" style="margin-top:12px">
+            <button class="btn-ok" id="manageClose">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="langBack" class="modal-back">
+    <div class="modal">
+        <h2 id="langTitle">Idioma</h2>
+        <div id="langOptions" class="cat-options"></div>
+    </div>
+</div>
+
+<script>
+const SUPPORTED_LANGUAGES = ['ca', 'es', 'en'];
+const LANGUAGE_LABELS = { ca: 'CAT', es: 'ES', en: 'EN' };
+let currentLanguage = localStorage.getItem('lista-lang') || 'ca';
+
+if (!SUPPORTED_LANGUAGES.includes(currentLanguage)) {
+    currentLanguage = 'ca';
+}
+
+const DEFAULT_CATEGORIES = ['fruit_veg', 'meat', 'fish', 'dairy', 'bakery', 'pantry', 'frozen', 'drinks', 'plant_based', 'cleaning', 'hygiene'];
+const CATEGORY_COLORS_FIXED = {
+    fruit_veg: '#9dc34a', meat: '#c9524f', fish: '#4f7cc9', dairy: '#e0a72f',
+    bakery: '#b07a3f', pantry: '#8a5cc9', frozen: '#2fa8c9', plant_based: '#2fa870',
+    drinks: '#d07a2f', cleaning: '#6b7280', hygiene: '#c94f9a'
+};
+const CATEGORY_COLORS_DYNAMIC = ['#5aa02f', '#2f9d8a', '#a0562f', '#7a5cc9', '#c94f7a', '#2f7cc9', '#c9a02f', '#4faa4f'];
+const FILTER_ALL_COLOR = '#3a9d5d';
+
+const TRANSLATIONS = {
+    ca: {
+        title: 'Cartly', tabCesta: 'Cistella', tabLista: 'Llista',
+        addPlaceholder: 'Afegir producte…', noCategory: 'Sense categoria', all: 'Tots',
+        habituals: 'Habituals', categoryBtn: 'Categoria', newCategory: 'Nova categoria',
+        hint: 'Llisca → per a preferit · llisca ← per esborrar · toca el nom per editar',
+        emptyBasket: 'La cistella està buida', emptyBasketSub: 'Afegeix el que vagis necessitant durant la setmana.',
+        emptyFilter: 'Res a', emptyFilterSub: 'Canvia el filtre o afegeix alguna cosa a aquesta categoria.',
+        emptyList: 'Encara no hi ha res a la llista', emptyListSub: 'El que afegeixis a la cistella apareixerà aquí per anar-ho ratllant.',
+        fav: 'Preferit', unfav: 'Treure de preferits', del: 'Esborrar',
+        pickTitle: 'Categoria del producte', pickSub: "S'assignarà al pròxim que afegeixis.",
+        newCategoryTitle: 'Nova categoria', newCategorySub: 'Posa-li un nom. Tindrà el seu propi color.',
+        newCategoryPlaceholder: 'Ex. Snacks', cancel: 'Cancel·lar', create: 'Crear', close: 'Tancar',
+        manageTitle: 'Categories', manageSub: 'Reanomena o elimina. No es pot eliminar una amb productes.',
+        manageEmpty: 'Encara no hi ha categories.', rename: 'Reanomenar', delete: 'Eliminar',
+        account: 'Compte de la casa', localMode: 'Mode local', localModeFull: 'Mode local (sense connexió de casa)',
+        synced: 'Sincronitzat', logout: 'Tancar sessió', house: 'La meva casa',
+        loginSoon: "L'inici de sessió per casa s'activarà en connectar el backend.",
+        inCart: (doneCount, totalCount) => `${doneCount} de ${totalCount} al carro`, clearNone: 'Treu el comprat',
+        clearCompletedItems: (count) => `Treure ${count} comprat${count > 1 ? 's' : ''}`, langLabel: 'Idioma',
+        authTagline: 'La compra de casa, compartida.',
+        login: 'Entrar', register: 'Crear casa', signup: 'Registrar-se',
+        userLabel: "Nom d'usuari", userPh: 'ex. la_meva_casa',
+        houseLabel: 'Nom de la casa', housePh: 'ex. La meva casa',
+        passLabel: 'Contrasenya', pass2Label: 'Confirma la contrasenya',
+        haveAccount: 'Ja tens compte?', noAccount: 'Encara no tens casa?',
+        goLogin: 'Entra', goRegister: "Crea'n una",
+        errFields: 'Omple tots els camps.', errPassMatch: 'Les contrasenyes no coincideixen.',
+        errPassShort: 'La contrasenya ha de tenir 6 caràcters o més.',
+        authSoon: "L'autenticació s'activarà en connectar el backend. De moment és una maqueta.",
+        categories: { fruit_veg: 'Fruita i verdura', meat: 'Carn', fish: 'Peix', dairy: 'Làctics', bakery: 'Fleca', pantry: 'Rebost', frozen: 'Congelats', drinks: 'Begudes', plant_based: 'Plant-based', cleaning: 'Neteja', hygiene: 'Higiene' }
+    },
+    es: {
+        title: 'Cartly', tabCesta: 'Cesta', tabLista: 'Lista',
+        addPlaceholder: 'Añadir producto…', noCategory: 'Sin categoría', all: 'Todos',
+        habituals: 'Habituales', categoryBtn: 'Categoría', newCategory: 'Nueva categoría',
+        hint: 'Desliza → para favorito · desliza ← para borrar · toca el nombre para editar',
+        emptyBasket: 'La cesta está vacía', emptyBasketSub: 'Añade lo que vayas necesitando durante la semana.',
+        emptyFilter: 'Nada en', emptyFilterSub: 'Cambia el filtro o añade algo a esta categoría.',
+        emptyList: 'Nada en la lista todavía', emptyListSub: 'Lo que añadas a la cesta aparecerá aquí para ir tachándolo.',
+        fav: 'Favorito', unfav: 'Quitar de favoritos', del: 'Borrar',
+        pickTitle: 'Categoría del producto', pickSub: 'Se asignará a lo próximo que añadas.',
+        newCategoryTitle: 'Nueva categoría', newCategorySub: 'Dale un nombre. Tendrá su propio color.',
+        newCategoryPlaceholder: 'Ej. Snacks', cancel: 'Cancelar', create: 'Crear', close: 'Cerrar',
+        manageTitle: 'Categorías', manageSub: 'Renombra o elimina. No se puede eliminar una con productos.',
+        manageEmpty: 'No hay categorías todavía.', rename: 'Renombrar', delete: 'Eliminar',
+        account: 'Cuenta de la casa', localMode: 'Modo local', localModeFull: 'Modo local (sin conexión de casa)',
+        synced: 'Sincronizado', logout: 'Cerrar sesión', house: 'Mi casa',
+        loginSoon: 'El inicio de sesión por casa se activará al conectar el backend.',
+        inCart: (doneCount, totalCount) => `${doneCount} de ${totalCount} en el carro`, clearNone: 'Quita lo comprado',
+        clearCompletedItems: (count) => `Quitar ${count} comprado${count > 1 ? 's' : ''}`, langLabel: 'Idioma',
+        authTagline: 'La compra de casa, compartida.',
+        login: 'Entrar', register: 'Crear casa', signup: 'Registrarse',
+        userLabel: 'Nombre de usuario', userPh: 'ej. mi_casa',
+        houseLabel: 'Nombre de la casa', housePh: 'ej. Mi casa',
+        passLabel: 'Contraseña', pass2Label: 'Confirma la contraseña',
+        haveAccount: '¿Ya tienes cuenta?', noAccount: '¿Aún no tienes casa?',
+        goLogin: 'Entra', goRegister: 'Crea una',
+        errFields: 'Rellena todos los campos.', errPassMatch: 'Las contraseñas no coinciden.',
+        errPassShort: 'La contraseña debe tener 6 caracteres o más.',
+        authSoon: 'La autenticación se activará al conectar el backend. De momento es una maqueta.',
+        categories: { fruit_veg: 'Fruta y verdura', meat: 'Carne', fish: 'Pescado', dairy: 'Lácteos', bakery: 'Panadería', pantry: 'Despensa', frozen: 'Congelados', drinks: 'Bebidas', plant_based: 'Plant-based', cleaning: 'Limpieza', hygiene: 'Higiene' }
+    },
+    en: {
+        title: 'Cartly', tabCesta: 'Basket', tabLista: 'List',
+        addPlaceholder: 'Add product…', noCategory: 'No category', all: 'All',
+        habituals: 'Regulars', categoryBtn: 'Category', newCategory: 'New category',
+        hint: 'Swipe → to favorite · swipe ← to delete · tap the name to edit',
+        emptyBasket: 'The basket is empty', emptyBasketSub: 'Add whatever you need through the week.',
+        emptyFilter: 'Nothing in', emptyFilterSub: 'Change the filter or add something to this category.',
+        emptyList: 'Nothing on the list yet', emptyListSub: "What you add to the basket will show up here to tick off.",
+        fav: 'Favorite', unfav: 'Remove favorite', del: 'Delete',
+        pickTitle: 'Product category', pickSub: "It'll be assigned to the next item you add.",
+        newCategoryTitle: 'New category', newCategorySub: 'Give it a name. It gets its own color.',
+        newCategoryPlaceholder: 'e.g. Snacks', cancel: 'Cancel', create: 'Create', close: 'Close',
+        manageTitle: 'Categories', manageSub: "Rename or delete. You can't delete one with products.",
+        manageEmpty: 'No categories yet.', rename: 'Rename', delete: 'Delete',
+        account: 'Household account', localMode: 'Local mode', localModeFull: 'Local mode (no household connection)',
+        synced: 'Synced', logout: 'Log out', house: 'My home',
+        loginSoon: 'Household login will be enabled once the backend is connected.',
+        inCart: (doneCount, totalCount) => `${doneCount} of ${totalCount} in the cart`, clearNone: 'Clear purchased',
+        clearCompletedItems: (count) => `Remove ${count} purchased`, langLabel: 'Language',
+        authTagline: 'The household groceries, shared.',
+        login: 'Log in', register: 'Create home', signup: 'Sign up',
+        userLabel: 'Username', userPh: 'e.g. my_home',
+        houseLabel: 'Home name', housePh: 'e.g. My home',
+        passLabel: 'Password', pass2Label: 'Confirm password',
+        haveAccount: 'Already have an account?', noAccount: 'No home yet?',
+        goLogin: 'Log in', goRegister: 'Create one',
+        errFields: 'Fill in all fields.', errPassMatch: "Passwords don't match.",
+        errPassShort: 'Password must be 6 characters or more.',
+        authSoon: 'Authentication will be enabled once the backend is connected. For now it is a mockup.',
+        categories: { fruit_veg: 'Fruit & veg', meat: 'Meat', fish: 'Fish', dairy: 'Dairy', bakery: 'Bakery', pantry: 'Pantry', frozen: 'Frozen', drinks: 'Drinks', plant_based: 'Plant-based', cleaning: 'Cleaning', hygiene: 'Hygiene' }
+    }
+};
+
+function translate(key) {
+    return TRANSLATIONS[currentLanguage][key];
+}
+
+function getCategoryName(categoryKey) {
+    return TRANSLATIONS[currentLanguage].categories[categoryKey] || categoryKey;
+}
+
+const CATEGORY_NAME_TO_KEY = (() => {
+    const map = {};
+    SUPPORTED_LANGUAGES.forEach(lang => {
+        Object.entries(TRANSLATIONS[lang].categories).forEach(([key, name]) => {
+            map[name.toLowerCase()] = key;
+        });
+    });
+    return map;
+})();
+
+function migrateCategories() {
+    let hasChanged = false;
+    
+    const convertCategory = (categoryValue) => {
+        if (!categoryValue) return categoryValue;
+        if (CATEGORY_COLORS_FIXED[categoryValue]) return categoryValue;
+        
+        const convertedKey = CATEGORY_NAME_TO_KEY[String(categoryValue).toLowerCase()];
+        if (convertedKey) {
+            hasChanged = true;
+            return convertedKey;
+        }
+        return categoryValue;
+    };
+    
+    appState.categories = appState.categories.map(convertCategory);
+    appState.categories = appState.categories.filter((category, index) => appState.categories.indexOf(category) === index);
+    
+    Object.values(appState.items).forEach(item => {
+        const newCategory = convertCategory(item.category);
+        if (newCategory !== item.category) {
+            item.category = newCategory;
+        }
+    });
+    
+    if (hasChanged) persistData();
+}
+
+let appState = { 
+    items: {}, 
+    categories: [...DEFAULT_CATEGORIES], 
+    selectedCategory: '' 
+};
+
+let currentCategoryFilter = '__all__';
+let database = null;
+let databaseReference = null;
+let isFirebaseEnabled = false;
+const LOCAL_STORAGE_KEY = 'lista-compra-v2';
+
+function getColorForCategory(categoryKey) {
+    if (!categoryKey) return 'transparent';
+    if (CATEGORY_COLORS_FIXED[categoryKey]) return CATEGORY_COLORS_FIXED[categoryKey];
+    
+    const customCategories = appState.categories.filter(category => !CATEGORY_COLORS_FIXED[category]);
+    const index = customCategories.indexOf(categoryKey);
+    const validIndex = index < 0 ? 0 : index;
+    
+    return CATEGORY_COLORS_DYNAMIC[validIndex % CATEGORY_COLORS_DYNAMIC.length];
+}
+
+function persistData() {
+    if (isFirebaseEnabled && databaseReference) {
+        databaseReference.set({ items: appState.items, categories: appState.categories });
+    } else {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
+        } catch (error) {
+            console.error("Local storage error:", error);
+        }
+    }
+}
+
+function loadLocalData() {
+    try {
+        const rawData = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (rawData) {
+            const parsedState = JSON.parse(rawData);
+            appState.items = parsedState.items || {};
+            appState.categories = parsedState.categories || [...DEFAULT_CATEGORIES];
+        }
+    } catch (error) {
+        console.error("Local storage parsing error:", error);
+    }
+    migrateCategories();
+}
+
+function initializeFirebase() {
+    if (!firebaseConfig || !firebaseConfig.databaseURL) {
+        return Promise.resolve(false);
+    }
+    
+    const firebaseAppScript = document.createElement('script');
+    firebaseAppScript.src = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js';
+    
+    const firebaseDatabaseScript = document.createElement('script');
+    firebaseDatabaseScript.src = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js';
+    
+    return new Promise((resolve) => {
+        firebaseAppScript.onload = () => document.head.appendChild(firebaseDatabaseScript);
+        firebaseDatabaseScript.onload = () => {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                databaseReference = database.ref('lista');
+                isFirebaseEnabled = true;
+                setSyncStatus(true);
+                
+                databaseReference.on('value', (snapshot) => {
+                    const data = snapshot.val() || {};
+                    appState.items = data.items || {};
+                    appState.categories = data.categories || [...DEFAULT_CATEGORIES];
+                    migrateCategories();
+                    renderApplicationUI();
+                });
+                
+                resolve(true);
+            } catch (error) {
+                console.error("Firebase init error", error);
+                resolve(false);
+            }
+        };
+        firebaseDatabaseScript.onerror = () => resolve(false);
+        firebaseAppScript.onerror = () => resolve(false);
+        document.head.appendChild(firebaseAppScript);
+    });
+}
+
+let currentHouseName = localStorage.getItem('casa-nombre') || '';
+let isLastSyncActive = false;
+
+function getHouseDisplayName() {
+    return currentHouseName.trim() || translate('house');
+}
+
+function setSyncStatus(isActive) {
+    isLastSyncActive = isActive;
+    const syncIndicator = document.getElementById('syncDot');
+    if (syncIndicator) {
+        syncIndicator.className = 'sync-dot' + (isActive ? '' : ' local');
+    }
+    
+    const accountStatus = document.getElementById('accStatus');
+    if (accountStatus) {
+        accountStatus.textContent = isActive ? translate('synced') : translate('localModeFull');
+    }
+}
+
+function renderAccountDetails() {
+    const displayName = getHouseDisplayName();
+    const initialCharacter = (displayName.trim()[0] || '·').toUpperCase();
+    
+    document.getElementById('avatarInitial').textContent = initialCharacter;
+    document.getElementById('accAvatar').textContent = initialCharacter;
+    document.getElementById('accName').textContent = displayName;
+}
+
+function openAccountModal() {
+    renderAccountDetails();
+    openModal('accountBack');
+}
+
+function logOutUser() {
+    closeModal('accountBack');
+    localStorage.removeItem('cartly-user');
+    document.getElementById('loginPass').value = '';
+    toggleAuthView(false);
+    displayAuthScreen();
+}
+
+function applyLanguagePreferences() {
+    document.documentElement.lang = currentLanguage;
+    document.getElementById('langLabel').textContent = LANGUAGE_LABELS[currentLanguage];
+    document.title = translate('title');
+    document.getElementById('appTitle').innerHTML = `${translate('title')}<span class="dot">.</span>`;
+    document.getElementById('tabList').textContent = translate('tabCesta');
+    document.getElementById('tabBuy').textContent = translate('tabLista');
+    document.getElementById('newInput').placeholder = translate('addPlaceholder');
+    document.getElementById('favesLabel').textContent = translate('habituals');
+    document.getElementById('listHint').textContent = translate('hint');
+    document.getElementById('pickTitle').textContent = translate('pickTitle');
+    document.getElementById('pickSub').textContent = translate('pickSub');
+    document.getElementById('newCatTitle').textContent = translate('newCategoryTitle');
+    document.getElementById('newCatSub').textContent = translate('newCategorySub');
+    document.getElementById('newCatInput').placeholder = translate('newCategoryPlaceholder');
+    document.getElementById('newCatCancel').textContent = translate('cancel');
+    document.getElementById('newCatOk').textContent = translate('create');
+    document.getElementById('accLogout').textContent = translate('logout');
+    document.getElementById('manageTitle').textContent = translate('manageTitle');
+    document.getElementById('manageSub').textContent = translate('manageSub');
+    document.getElementById('manageClose').textContent = translate('close');
+    document.getElementById('langTitle').textContent = translate('langLabel');
+    document.getElementById('avatar').setAttribute('aria-label', translate('account'));
+    document.getElementById('adderCat').setAttribute('aria-label', translate('pickTitle'));
+    
+    document.getElementById('authLangLabel').textContent = LANGUAGE_LABELS[currentLanguage];
+    document.getElementById('authTagline').textContent = translate('authTagline');
+    document.getElementById('lblUser1').textContent = translate('userLabel');
+    document.getElementById('lblUser2').textContent = translate('userLabel');
+    document.getElementById('loginUser').placeholder = translate('userPh');
+    document.getElementById('regUser').placeholder = translate('userPh');
+    document.getElementById('lblHouse').textContent = translate('houseLabel');
+    document.getElementById('regHouse').placeholder = translate('housePh');
+    document.getElementById('lblPass1').textContent = translate('passLabel');
+    document.getElementById('lblPass2').textContent = translate('passLabel');
+    document.getElementById('lblPass2b').textContent = translate('pass2Label');
+    document.getElementById('loginBtn').textContent = translate('login');
+    document.getElementById('registerBtn').textContent = translate('register');
+    document.getElementById('noAccountTxt').textContent = translate('noAccount');
+    document.getElementById('haveAccountTxt').textContent = translate('haveAccount');
+    document.getElementById('toRegister').textContent = translate('goRegister');
+    document.getElementById('toLogin').textContent = translate('goLogin');
+    
+    setSyncStatus(isLastSyncActive);
+    renderAccountDetails();
+    renderApplicationUI();
+}
+
+function openLanguageSelector() {
+    const optionsContainer = document.getElementById('langOptions');
+    optionsContainer.innerHTML = '';
+    
+    const languageNames = { ca: 'Català', es: 'Español', en: 'English' };
+    
+    SUPPORTED_LANGUAGES.forEach(languageCode => {
+        const optionElement = document.createElement('div');
+        optionElement.className = `cat-opt${languageCode === currentLanguage ? ' sel' : ''}`;
+        optionElement.innerHTML = `
+            <span style="font-weight:800;font-size:12px;width:34px;color:var(--green-deep)">
+                ${LANGUAGE_LABELS[languageCode]}
+            </span>
+            ${languageNames[languageCode]}
+            <span class="tick">✓</span>
+        `;
+        
+        optionElement.onclick = () => {
+            currentLanguage = languageCode;
+            localStorage.setItem('lista-lang', languageCode);
+            applyLanguagePreferences();
+            closeModal('langBack');
+        };
+        optionsContainer.appendChild(optionElement);
+    });
+    openModal('langBack');
+}
+
+function generateUniqueId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function addProductItem(productName) {
+    productName = productName.trim();
+    if (!productName) return;
+    
+    const itemId = generateUniqueId();
+    const currentOrders = Object.values(appState.items).map(item => item.order || 0);
+    const maxOrder = currentOrders.length > 0 ? Math.max(...currentOrders) : 0;
+    
+    appState.items[itemId] = {
+        id: itemId,
+        name: productName,
+        quantity: 1,
+        category: appState.selectedCategory || '',
+        done: false,
+        fav: false,
+        order: maxOrder + 1
+    };
+    
+    persistData();
+    if (!isFirebaseEnabled) renderApplicationUI();
+}
+
+function updateProductItem(itemId, patchData) {
+    if (!appState.items[itemId]) return;
+    Object.assign(appState.items[itemId], patchData);
+    
+    persistData();
+    if (!isFirebaseEnabled) renderApplicationUI();
+}
+
+function removeProductItem(itemId) {
+    delete appState.items[itemId];
+    
+    persistData();
+    if (!isFirebaseEnabled) renderApplicationUI();
+}
+
+function removeCompletedItems() {
+    Object.values(appState.items).forEach(item => {
+        if (item.done) {
+            delete appState.items[item.id];
+        }
+    });
+    
+    persistData();
+    if (!isFirebaseEnabled) renderApplicationUI();
+}
+
+function addNewCategory(categoryName) {
+    categoryName = categoryName.trim();
+    if (!categoryName) return;
+    
+    if (!appState.categories.includes(categoryName)) {
+        appState.categories.push(categoryName);
+    }
+    
+    appState.selectedCategory = categoryName;
+    persistData();
+    renderApplicationUI();
+}
+
+function renderApplicationUI() {
+    const allItemsArray = Object.values(appState.items);
+    renderSelectedCategoryIndicator();
+    renderCategoryFilters();
+    renderFavoriteItems(allItemsArray);
+    renderShoppingList(allItemsArray);
+    renderChecklist(allItemsArray);
+}
+
+function renderSelectedCategoryIndicator() {
+    const indicatorDot = document.getElementById('adderCatDot');
+    const indicatorLabel = document.getElementById('adderCatLabel');
+    
+    if (appState.selectedCategory === '') {
+        indicatorDot.style.background = '#d3dbd4';
+        indicatorLabel.textContent = translate('noCategory');
+    } else {
+        indicatorDot.style.background = getColorForCategory(appState.selectedCategory);
+        indicatorLabel.textContent = getCategoryName(appState.selectedCategory);
+    }
+}
+
+function renderCategoryFilters() {
+    const filtersContainer = document.getElementById('catScroll');
+    filtersContainer.innerHTML = '';
+    
+    const createFilterButton = (key, text, color, isActive, hasDot) => {
+        const button = document.createElement('button');
+        button.className = `cat-pill${isActive ? ' sel' : ''}`;
+        if (isActive) button.style.background = color;
+        
+        let dotHTML = hasDot ? `<span class="cat-dot" style="background:${color}"></span>` : '';
+        button.innerHTML = dotHTML + escapeHtmlString(text);
+        
+        button.onclick = () => {
+            currentCategoryFilter = key;
+            renderCategoryFilters();
+            renderShoppingList(Object.values(appState.items));
+        };
+        filtersContainer.appendChild(button);
+    };
+    
+    createFilterButton('__all__', translate('all'), FILTER_ALL_COLOR, currentCategoryFilter === '__all__', false);
+    
+    appState.categories.forEach(category => {
+        createFilterButton(category, getCategoryName(category), getColorForCategory(category), currentCategoryFilter === category, true);
+    });
+    
+    createFilterButton('__none__', translate('noCategory'), 'var(--ink-soft)', currentCategoryFilter === '__none__', false);
+
+    const addCategoryButton = document.createElement('button');
+    addCategoryButton.className = 'cat-pill add-new';
+    addCategoryButton.innerHTML = `＋ ${translate('categoryBtn')}`;
+    addCategoryButton.onclick = () => openNewCategoryModal();
+    filtersContainer.appendChild(addCategoryButton);
+
+    const manageCategoriesButton = document.createElement('button');
+    manageCategoriesButton.className = 'cat-pill add-new';
+    manageCategoriesButton.setAttribute('aria-label', translate('manageTitle'));
+    manageCategoriesButton.innerHTML = '✎';
+    manageCategoriesButton.onclick = () => openManageCategoriesModal();
+    filtersContainer.appendChild(manageCategoriesButton);
+}
+
+function renderFavoriteItems(itemsArray) {
+    const favesContainer = document.getElementById('favesBox');
+    const chipsContainer = document.getElementById('favesChips');
+    
+    const activeItemNames = new Set(itemsArray.map(item => item.name.toLowerCase()));
+    
+    const favoriteItems = itemsArray
+        .filter(item => item.fav)
+        .filter((value, index, self) => self.findIndex(item => item.name.toLowerCase() === value.name.toLowerCase()) === index);
+        
+    if (favoriteItems.length === 0) {
+        favesContainer.hidden = true;
+        return;
+    }
+    
+    favesContainer.hidden = false;
+    chipsContainer.innerHTML = '';
+    
+    favoriteItems.forEach(favorite => {
+        const isCurrentlyInList = activeItemNames.has(favorite.name.toLowerCase());
+        const chipElement = document.createElement('button');
+        chipElement.className = 'chip';
+        
+        const plusIcon = isCurrentlyInList ? '' : '<span class="plus">+</span>';
+        chipElement.innerHTML = `<span class="cat-dot" style="background:${getColorForCategory(favorite.category)}"></span>${escapeHtmlString(favorite.name)} ${plusIcon}`;
+        
+        chipElement.onclick = () => {
+            if (!isCurrentlyInList) {
+                appState.selectedCategory = favorite.category || '';
+                addProductItem(favorite.name);
+            }
+        };
+        chipsContainer.appendChild(chipElement);
+    });
+}
+
+function renderShoppingList(allItemsArray) {
+    const listContainer = document.getElementById('listBody');
+    document.getElementById('listHint').hidden = allItemsArray.length === 0;
+    
+    if (allItemsArray.length === 0) {
+        listContainer.innerHTML = `
+            <div class="empty">
+                <div class="em">🧺</div>
+                <p>${translate('emptyBasket')}</p>
+                <p class="sub">${translate('emptyBasketSub')}</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let filteredItems = allItemsArray;
+    if (currentCategoryFilter === '__none__') {
+        filteredItems = allItemsArray.filter(item => !item.category);
+    } else if (currentCategoryFilter !== '__all__') {
+        filteredItems = allItemsArray.filter(item => item.category === currentCategoryFilter);
+    }
+    
+    if (filteredItems.length === 0) {
+        const categoryFilterName = currentCategoryFilter === '__none__' ? translate('noCategory') : getCategoryName(currentCategoryFilter);
+        listContainer.innerHTML = `
+            <div class="empty">
+                <div class="em">🔍</div>
+                <p>${translate('emptyFilter')} “${escapeHtmlString(categoryFilterName)}”</p>
+                <p class="sub">${translate('emptyFilterSub')}</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const itemsGroupedByCategory = {};
+    filteredItems.sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    filteredItems.forEach(item => {
+        const categoryKey = item.category || '__none__';
+        if (!itemsGroupedByCategory[categoryKey]) itemsGroupedByCategory[categoryKey] = [];
+        itemsGroupedByCategory[categoryKey].push(item);
+    });
+    
+    const sortedCategoryKeys = Object.keys(itemsGroupedByCategory).sort((a, b) => {
+        if (a === '__none__') return 1;
+        if (b === '__none__') return -1;
+        return appState.categories.indexOf(a) - appState.categories.indexOf(b);
+    });
+    
+    listContainer.innerHTML = '';
+    
+    sortedCategoryKeys.forEach(categoryKey => {
+        const groupElement = document.createElement('div');
+        groupElement.className = 'group';
+        
+        const categoryLabel = categoryKey === '__none__' ? translate('noCategory') : getCategoryName(categoryKey);
+        const categoryColor = categoryKey === '__none__' ? 'var(--line)' : getColorForCategory(categoryKey);
+        
+        const groupHeader = document.createElement('div');
+        groupHeader.className = 'group-head';
+        groupHeader.innerHTML = `
+            <span class="cat-dot" style="background:${categoryColor}"></span>
+            <span>${escapeHtmlString(categoryLabel)}</span>
+            <small>${itemsGroupedByCategory[categoryKey].length}</small>
+        `;
+        
+        groupElement.appendChild(groupHeader);
+        itemsGroupedByCategory[categoryKey].forEach(item => groupElement.appendChild(buildProductRow(item, categoryColor)));
+        listContainer.appendChild(groupElement);
+    });
+}
+
+function buildProductRow(item, color) {
+    const rowWrapper = document.createElement('div');
+    rowWrapper.className = 'row-wrap';
+    rowWrapper.innerHTML = `
+        <div class="act-fav">★ ${item.fav ? translate('unfav') : translate('fav')}</div>
+        <div class="act-del">${translate('del')} 🗑</div>
+    `;
+    
+    const rowElement = document.createElement('div');
+    rowElement.className = 'row';
+    rowElement.style.borderLeftColor = color;
+
+    const quantityContainer = document.createElement('div');
+    quantityContainer.className = 'qty';
+    
+    const minusButton = document.createElement('button');
+    minusButton.textContent = '−';
+    const quantityDisplay = document.createElement('span');
+    quantityDisplay.textContent = item.quantity;
+    const plusButton = document.createElement('button');
+    plusButton.textContent = '+';
+    
+    minusButton.onclick = (event) => {
+        event.stopPropagation();
+        if (item.quantity <= 1) {
+            removeProductItem(item.id);
+        } else {
+            updateProductItem(item.id, { quantity: item.quantity - 1 });
+        }
+    };
+    
+    plusButton.onclick = (event) => {
+        event.stopPropagation();
+        updateProductItem(item.id, { quantity: item.quantity + 1 });
+    };
+    
+    quantityContainer.append(minusButton, quantityDisplay, plusButton);
+
+    const nameContainer = document.createElement('div');
+    nameContainer.className = 'name';
+    nameContainer.textContent = item.name;
+    nameContainer.onclick = () => editItemName(item, nameContainer);
+
+    rowElement.append(quantityContainer, nameContainer);
+    
+    if (item.fav) {
+        const favoriteMarker = document.createElement('div');
+        favoriteMarker.className = 'fav-mark';
+        favoriteMarker.textContent = '★';
+        rowElement.appendChild(favoriteMarker);
+    }
+    
+    rowWrapper.appendChild(rowElement);
+    attachSwipeHandlers(rowElement, () => removeProductItem(item.id), () => updateProductItem(item.id, { fav: !item.fav }));
+    return rowWrapper;
+}
+
+function editItemName(item, nameElement) {
+    const inputElement = document.createElement('input');
+    inputElement.type = 'text';
+    inputElement.value = item.name;
+    inputElement.enterKeyHint = 'done';
+    
+    nameElement.textContent = '';
+    nameElement.appendChild(inputElement);
+    inputElement.focus();
+    inputElement.select();
+    
+    const commitEdit = () => {
+        const newName = inputElement.value.trim();
+        if (newName) {
+            updateProductItem(item.id, { name: newName });
+        } else {
+            renderApplicationUI();
+        }
+    };
+    
+    inputElement.onblur = commitEdit;
+    inputElement.onkeydown = (event) => {
+        if (event.key === 'Enter') inputElement.blur();
+    };
+    inputElement.onclick = (event) => event.stopPropagation();
+}
+
+function attachSwipeHandlers(rowElement, onDeleteCallback, onFavoriteCallback) {
+    const wrapperElement = rowElement.parentElement;
+    let startPositionX = 0, startPositionY = 0, currentDeltaX = 0;
+    let isDragging = false, isDirectionDecided = false, isHorizontalDrag = false;
+    
+    const DELETE_THRESHOLD = -88, DELETE_MAX = -140;
+    const FAVORITE_THRESHOLD = 88, FAVORITE_MAX = 140;
+    
+    rowElement.addEventListener('touchstart', event => {
+        startPositionX = event.touches[0].clientX;
+        startPositionY = event.touches[0].clientY;
+        isDragging = true;
+        isDirectionDecided = false;
+        isHorizontalDrag = false;
+        rowElement.style.transition = 'none';
+    }, { passive: true });
+    
+    rowElement.addEventListener('touchmove', event => {
+        if (!isDragging) return;
+        
+        const deltaX = event.touches[0].clientX - startPositionX;
+        const deltaY = event.touches[0].clientY - startPositionY;
+        
+        if (!isDirectionDecided) {
+            isDirectionDecided = true;
+            isHorizontalDrag = Math.abs(deltaX) > Math.abs(deltaY);
+        }
+        
+        if (!isHorizontalDrag) return;
+        
+        currentDeltaX = Math.max(DELETE_MAX, Math.min(FAVORITE_MAX, deltaX));
+        
+        wrapperElement.classList.toggle('swipe-right', currentDeltaX > 0);
+        wrapperElement.classList.toggle('swipe-left', currentDeltaX < 0);
+        rowElement.style.transform = `translateX(${currentDeltaX}px)`;
+    }, { passive: true });
+    
+    rowElement.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        rowElement.style.transition = '';
+        
+        if (currentDeltaX <= DELETE_THRESHOLD) {
+            rowElement.style.transform = 'translateX(-100%)';
+            setTimeout(onDeleteCallback, 180);
+        } else if (currentDeltaX >= FAVORITE_THRESHOLD) {
+            rowElement.style.transform = 'translateX(0)';
+            onFavoriteCallback();
+            setTimeout(() => { wrapperElement.classList.remove('swipe-right', 'swipe-left'); }, 220);
+        } else {
+            rowElement.style.transform = 'translateX(0)';
+            setTimeout(() => { wrapperElement.classList.remove('swipe-right', 'swipe-left'); }, 220);
+        }
+        currentDeltaX = 0;
+    });
+}
+
+function renderChecklist(itemsArray) {
+    const checklistContainer = document.getElementById('buyBody');
+    const footerContainer = document.getElementById('buyFoot');
+    
+    if (itemsArray.length === 0) {
+        checklistContainer.innerHTML = `
+            <div class="empty">
+                <div class="em">🛒</div>
+                <p>${translate('emptyList')}</p>
+                <p class="sub">${translate('emptyListSub')}</p>
+            </div>
+        `;
+        footerContainer.hidden = true;
+        return;
+    }
+    
+    footerContainer.hidden = document.getElementById('viewBuy').hidden;
+    
+    const itemsGroupedByCategory = {};
+    itemsArray.forEach(item => {
+        const categoryKey = item.category || '__none__';
+        if (!itemsGroupedByCategory[categoryKey]) itemsGroupedByCategory[categoryKey] = [];
+        itemsGroupedByCategory[categoryKey].push(item);
+    });
+    
+    const sortedCategoryKeys = Object.keys(itemsGroupedByCategory).sort((a, b) => {
+        if (a === '__none__') return 1;
+        if (b === '__none__') return -1;
+        return appState.categories.indexOf(a) - appState.categories.indexOf(b);
+    });
+    
+    checklistContainer.innerHTML = '';
+    
+    sortedCategoryKeys.forEach(categoryKey => {
+        const categoryColor = categoryKey === '__none__' ? 'var(--line)' : getColorForCategory(categoryKey);
+        const categoryLabel = categoryKey === '__none__' ? translate('noCategory') : getCategoryName(categoryKey);
+        
+        const groupHeader = document.createElement('div');
+        groupHeader.className = 'group-head';
+        groupHeader.style.margin = '4px 4px 8px';
+        groupHeader.innerHTML = `
+            <span class="cat-dot" style="background:${categoryColor}"></span>
+            <span>${escapeHtmlString(categoryLabel)}</span>
+        `;
+        checklistContainer.appendChild(groupHeader);
+        
+        itemsGroupedByCategory[categoryKey].sort((a, b) => Number(a.done) - Number(b.done));
+        
+        itemsGroupedByCategory[categoryKey].forEach(item => {
+            const rowElement = document.createElement('div');
+            rowElement.className = `buy-row${item.done ? ' done' : ''}`;
+            rowElement.style.borderLeftColor = categoryColor;
+            
+            const quantityHTML = item.quantity > 1 ? `<div class="b-qty">×${item.quantity}</div>` : '';
+            
+            rowElement.innerHTML = `
+                <div class="tickbox">
+                    <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>
+                </div>
+                <div class="b-name">${escapeHtmlString(item.name)}</div>
+                ${quantityHTML}
+            `;
+            
+            rowElement.onclick = () => updateProductItem(item.id, { done: !item.done });
+            checklistContainer.appendChild(rowElement);
+        });
+    });
+    
+    const completedItemsCount = itemsArray.filter(item => item.done).length;
+    document.getElementById('buyCount').textContent = translate('inCart')(completedItemsCount, itemsArray.length);
+    
+    const clearButton = document.getElementById('clearCompletedBtn');
+    clearButton.disabled = completedItemsCount === 0;
+    clearButton.textContent = completedItemsCount === 0 ? translate('clearNone') : translate('clearCompletedItems')(completedItemsCount);
+}
+
+function countItemsInCategory(categoryKey) {
+    return Object.values(appState.items).filter(item => item.category === categoryKey).length;
+}
+
+function openManageCategoriesModal() {
+    renderManageCategoriesList();
+    openModal('manageBack');
+}
+
+function renderManageCategoriesList() {
+    const listContainer = document.getElementById('manageList');
+    listContainer.innerHTML = '';
+    
+    if (appState.categories.length === 0) {
+        listContainer.innerHTML = `<p class="sub" style="text-align:center;padding:20px 0">${translate('manageEmpty')}</p>`;
+        return;
+    }
+    
+    appState.categories.forEach(category => {
+        const itemsCount = countItemsInCategory(category);
+        const rowElement = document.createElement('div');
+        rowElement.className = 'manage-row';
+        
+        const dotElement = document.createElement('span');
+        dotElement.className = 'cat-dot';
+        dotElement.style.background = getColorForCategory(category);
+        
+        const nameElement = document.createElement('div');
+        nameElement.className = 'mname';
+        nameElement.textContent = getCategoryName(category);
+        
+        const countElement = document.createElement('span');
+        countElement.className = 'mcount';
+        countElement.textContent = itemsCount;
+        
+        const editButton = document.createElement('button');
+        editButton.textContent = '✎';
+        editButton.title = translate('rename');
+        editButton.onclick = () => editCategoryNameInManager(category, nameElement);
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'del';
+        deleteButton.textContent = '🗑';
+        deleteButton.title = translate('delete');
+        deleteButton.disabled = itemsCount > 0;
+        deleteButton.onclick = () => {
+            if (itemsCount === 0) deleteCategory(category);
+        };
+        
+        rowElement.append(dotElement, nameElement, countElement, editButton, deleteButton);
+        listContainer.appendChild(rowElement);
+    });
+}
+
+function editCategoryNameInManager(oldCategoryKey, nameElement) {
+    const inputElement = document.createElement('input');
+    inputElement.type = 'text';
+    inputElement.value = getCategoryName(oldCategoryKey);
+    inputElement.enterKeyHint = 'done';
+    inputElement.maxLength = 30;
+    
+    nameElement.textContent = '';
+    nameElement.appendChild(inputElement);
+    inputElement.focus();
+    inputElement.select();
+    
+    const commitEdit = () => {
+        const newValue = inputElement.value.trim();
+        if (!newValue || newValue === getCategoryName(oldCategoryKey)) {
+            renderManageCategoriesList();
+            return;
+        }
+        if (appState.categories.includes(newValue)) {
+            renderManageCategoriesList();
+            return;
+        }
+        
+        const index = appState.categories.indexOf(oldCategoryKey);
+        if (index >= 0) {
+            appState.categories[index] = newValue;
+        }
+        
+        Object.values(appState.items).forEach(item => {
+            if (item.category === oldCategoryKey) {
+                item.category = newValue;
+            }
+        });
+        
+        if (appState.selectedCategory === oldCategoryKey) appState.selectedCategory = newValue;
+        if (currentCategoryFilter === oldCategoryKey) currentCategoryFilter = newValue;
+        
+        persistData();
+        renderManageCategoriesList();
+        if (!isFirebaseEnabled) renderApplicationUI();
+    };
+    
+    inputElement.onblur = commitEdit;
+    inputElement.onkeydown = (event) => {
+        if (event.key === 'Enter') inputElement.blur();
+    };
+}
+
+function deleteCategory(categoryKey) {
+    if (countItemsInCategory(categoryKey) > 0) return;
+    
+    appState.categories = appState.categories.filter(category => category !== categoryKey);
+    if (appState.selectedCategory === categoryKey) appState.selectedCategory = '';
+    if (currentCategoryFilter === categoryKey) currentCategoryFilter = '__all__';
+    
+    persistData();
+    renderManageCategoriesList();
+    if (!isFirebaseEnabled) renderApplicationUI();
+}
+
+function openPickCategoryModal() {
+    const optionsContainer = document.getElementById('pickOptions');
+    optionsContainer.innerHTML = '';
+    
+    const createOption = (categoryValue, text, color, isAddOption) => {
+        const optionElement = document.createElement('div');
+        const isSelected = (!isAddOption && appState.selectedCategory === categoryValue);
+        
+        optionElement.className = `cat-opt${isSelected ? ' sel' : ''}${isAddOption ? ' add-row' : ''}`;
+        
+        if (isAddOption) {
+            optionElement.innerHTML = `＋ ${translate('newCategory')}`;
+            optionElement.onclick = () => {
+                closeModal('pickBack');
+                openNewCategoryModal();
+            };
+        } else {
+            optionElement.innerHTML = `
+                <span class="cat-dot" style="background:${color}"></span>
+                ${escapeHtmlString(text)}
+                <span class="tick">✓</span>
+            `;
+            optionElement.onclick = () => {
+                appState.selectedCategory = categoryValue;
+                renderSelectedCategoryIndicator();
+                closeModal('pickBack');
+            };
+        }
+        optionsContainer.appendChild(optionElement);
+    };
+    
+    appState.categories.forEach(category => {
+        createOption(category, getCategoryName(category), getColorForCategory(category), false);
+    });
+    
+    createOption('', translate('noCategory'), '#d3dbd4', false);
+    createOption(null, null, null, true);
+    
+    openModal('pickBack');
+}
+
+function openNewCategoryModal() {
+    const inputElement = document.getElementById('newCatInput');
+    inputElement.value = '';
+    document.getElementById('newCatOk').disabled = true;
+    openModal('newCatBack');
+    setTimeout(() => inputElement.focus(), 220);
+}
+
+function confirmNewCategoryCreation() {
+    const newValue = document.getElementById('newCatInput').value.trim();
+    if (!newValue) return;
+    
+    addNewCategory(newValue);
+    renderSelectedCategoryIndicator();
+    closeModal('newCatBack');
+}
+
+function openModal(modalId) {
+    document.getElementById(modalId).classList.add('open');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('open');
+}
+
+function escapeHtmlString(inputString) {
+    return String(inputString).replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+}
+
+document.getElementById('addBtn').onclick = () => {
+    const inputElement = document.getElementById('newInput');
+    addProductItem(inputElement.value);
+    inputElement.value = '';
+    inputElement.focus();
+};
+
+document.getElementById('newInput').addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+        addProductItem(event.target.value);
+        event.target.value = '';
+    }
+});
+
+document.getElementById('clearCompletedBtn').onclick = removeCompletedItems;
+
+document.getElementById('adderCat').onclick = openPickCategoryModal;
+
+const newCategoryInput = document.getElementById('newCatInput');
+newCategoryInput.addEventListener('input', () => {
+    document.getElementById('newCatOk').disabled = newCategoryInput.value.trim() === '';
+});
+newCategoryInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') confirmNewCategoryCreation();
+});
+
+document.getElementById('newCatOk').onclick = confirmNewCategoryCreation;
+document.getElementById('newCatCancel').onclick = () => closeModal('newCatBack');
+document.getElementById('manageClose').onclick = () => closeModal('manageBack');
+
+document.getElementById('langBtn').onclick = openLanguageSelector;
+document.getElementById('authLangBtn').onclick = openLanguageSelector;
+
+document.getElementById('loginBtn').onclick = handleUserLogin;
+document.getElementById('registerBtn').onclick = handleUserRegistration;
+document.getElementById('toRegister').onclick = () => toggleAuthView(true);
+document.getElementById('toLogin').onclick = () => toggleAuthView(false);
+
+document.getElementById('avatar').onclick = openAccountModal;
+document.getElementById('accLogout').onclick = logOutUser;
+
+['pickBack', 'newCatBack', 'manageBack', 'accountBack', 'langBack'].forEach(modalId => {
+    const modalElement = document.getElementById(modalId);
+    modalElement.addEventListener('click', event => {
+        if (event.target === modalElement) closeModal(modalId);
+    });
+});
+
+const tabListElement = document.getElementById('tabList');
+const tabBuyElement = document.getElementById('tabBuy');
+
+tabListElement.onclick = () => switchApplicationView('list');
+tabBuyElement.onclick = () => switchApplicationView('buy');
+
+function switchApplicationView(viewName) {
+    const isListView = (viewName === 'list');
+    
+    tabListElement.classList.toggle('active', isListView);
+    tabBuyElement.classList.toggle('active', !isListView);
+    
+    document.getElementById('viewList').hidden = !isListView;
+    document.getElementById('viewBuy').hidden = isListView;
+    
+    document.getElementById('buyFoot').hidden = isListView || Object.keys(appState.items).length === 0;
+}
+
+function displayAuthScreen() {
+    document.getElementById('authScreen').classList.remove('hidden');
+}
+
+function hideAuthScreen() {
+    document.getElementById('authScreen').classList.add('hidden');
+}
+
+function toggleAuthView(showRegisterView) {
+    document.getElementById('loginForm').hidden = showRegisterView;
+    document.getElementById('registerForm').hidden = !showRegisterView;
+    document.getElementById('loginErr').hidden = true;
+    document.getElementById('regErr').hidden = true;
+}
+
+function displayAuthError(elementId, errorMessage) {
+    const errorElement = document.getElementById(elementId);
+    errorElement.textContent = errorMessage;
+    errorElement.hidden = false;
+}
+
+function handleUserLogin() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value;
+    
+    if (!username || !password) {
+        displayAuthError('loginErr', translate('errFields'));
+        return;
+    }
+    
+    enterApplication(username);
+}
+
+function handleUserRegistration() {
+    const username = document.getElementById('regUser').value.trim();
+    const houseName = document.getElementById('regHouse').value.trim();
+    const password = document.getElementById('regPass').value;
+    const passwordConfirmation = document.getElementById('regPass2').value;
+    
+    if (!username || !houseName || !password || !passwordConfirmation) {
+        displayAuthError('regErr', translate('errFields'));
+        return;
+    }
+    if (password.length < 6) {
+        displayAuthError('regErr', translate('errPassShort'));
+        return;
+    }
+    if (password !== passwordConfirmation) {
+        displayAuthError('regErr', translate('errPassMatch'));
+        return;
+    }
+    
+    currentHouseName = houseName;
+    localStorage.setItem('casa-nombre', houseName);
+    enterApplication(username);
+}
+
+function enterApplication(username) {
+    localStorage.setItem('cartly-user', username);
+    hideAuthScreen();
+    renderAccountDetails();
+    console.info('[Cartly] ' + translate('authSoon'));
+}
+
+(async function bootstrapApp() {
+    loadLocalData();
+    applyLanguagePreferences();
+    
+    const savedUser = localStorage.getItem('cartly-user');
+    if (savedUser) {
+        hideAuthScreen();
+    } else {
+        displayAuthScreen();
+    }
+    
+    const isFirebaseReady = await initializeFirebase();
+    if (!isFirebaseReady) {
+        setSyncStatus(false);
+        isFirebaseEnabled = false;
+    }
+})();
+</script>
+</body>
+</html>
