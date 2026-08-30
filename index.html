@@ -34,6 +34,37 @@
         --radius: 16px;
         --shadow: 0 1px 3px rgba(28,42,31,.06),0 4px 16px rgba(28,42,31,.05);
     }
+    /* Mode fosc neutre (accent verd). Per defecte segueix el sistema; el switch el força. */
+    :root[data-theme="dark"] {
+        --bg: #14181a;
+        --card: #1e2427;
+        --ink: #e8edeb;
+        --ink-soft: #9aa8a2;
+        --line: #2c3438;
+        --green: #46b06c;
+        --green-deep: #3a9d5d;
+        --green-tint: #223029;
+        --gold: #e0a72f;
+        --danger: #e26461;
+        --check: #6b7a74;
+        --shadow: 0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.35);
+    }
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --bg: #14181a;
+            --card: #1e2427;
+            --ink: #e8edeb;
+            --ink-soft: #9aa8a2;
+            --line: #2c3438;
+            --green: #46b06c;
+            --green-deep: #3a9d5d;
+            --green-tint: #223029;
+            --gold: #e0a72f;
+            --danger: #e26461;
+            --check: #6b7a74;
+            --shadow: 0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.35);
+        }
+    }
     
     * {
         box-sizing: border-box;
@@ -67,14 +98,19 @@
     
     .titlebar {
         display: grid;
-        grid-template-columns: 60px 1fr 44px;
+        grid-template-columns: auto 1fr auto;
         align-items: center;
         gap: 8px;
     }
-    
-    .lang-btn {
+    .left-controls {
         grid-column: 1;
         justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+    }
+    
+    .lang-btn {
         display: inline-flex;
         align-items: center;
         gap: 3px;
@@ -98,6 +134,42 @@
         font-size: 9px;
         color: var(--ink-soft);
     }
+
+    .theme-toggle {
+        position: relative;
+        width: 46px;
+        height: 26px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--green-tint);
+        cursor: pointer;
+        padding: 0;
+        transition: background .2s;
+        flex: 0 0 auto;
+    }
+    .theme-toggle .theme-knob {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--card);
+        box-shadow: 0 1px 3px rgba(0,0,0,.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        transition: transform .22s cubic-bezier(.22,1,.36,1);
+    }
+    .theme-toggle[aria-checked="true"] {
+        background: var(--green);
+        border-color: var(--green);
+    }
+    .theme-toggle[aria-checked="true"] .theme-knob {
+        transform: translateX(20px);
+    }
+    .theme-toggle .theme-icon { line-height: 1; }
     
     h1 {
         font-size: 23px;
@@ -956,11 +1028,17 @@
         display: none;
     }
     
-    .auth-lang {
+    .auth-controls {
         position: fixed;
         top: calc(14px + env(safe-area-inset-top));
         right: 18px;
         z-index: 101;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .auth-lang {
+        position: static;
     }
     
     .auth-card {
@@ -1092,7 +1170,12 @@
 <body>
 
 <div id="authScreen">
-    <button id="authLangBtn" class="lang-btn auth-lang" aria-label="Idioma"><span id="authLangLabel">CAT</span><span class="chev">▾</span></button>
+    <div class="auth-controls">
+        <button id="authLangBtn" class="lang-btn auth-lang" aria-label="Idioma"><span id="authLangLabel">CAT</span><span class="chev">▾</span></button>
+        <button id="authThemeToggle" class="theme-toggle" role="switch" aria-checked="false" aria-label="Mode fosc">
+            <span class="theme-knob"><span class="theme-icon">☀</span></span>
+        </button>
+    </div>
     <div class="auth-card">
         <div class="auth-brand">Cartly<span class="dot">.</span></div>
         <p class="auth-tagline" id="authTagline">La compra de casa, compartida.</p>
@@ -1125,7 +1208,12 @@
 
 <header>
     <div class="titlebar">
-        <button id="langBtn" class="lang-btn" aria-label="Idioma"><span id="langLabel">CAT</span><span class="chev">▾</span></button>
+        <div class="left-controls">
+            <button id="langBtn" class="lang-btn" aria-label="Idioma"><span id="langLabel">CAT</span><span class="chev">▾</span></button>
+            <button id="themeToggle" class="theme-toggle" role="switch" aria-checked="false" aria-label="Mode fosc">
+                <span class="theme-knob"><span class="theme-icon">☀</span></span>
+            </button>
+        </div>
         <h1 id="appTitle">Cartly<span class="dot">.</span></h1>
         <button id="avatar" class="avatar" aria-label="Cuenta de la casa">
             <span id="avatarInitial">·</span>
@@ -1231,6 +1319,44 @@ let currentLanguage = localStorage.getItem('lista-lang') || 'ca';
 
 if (!SUPPORTED_LANGUAGES.includes(currentLanguage)) {
     currentLanguage = 'ca';
+}
+
+/* ============ TEMA (clar/fosc) ============ */
+// 'dark' | 'light' | null (null = segueix el sistema)
+let currentTheme = localStorage.getItem('cartly-theme');
+
+function isDarkActive() {
+    if (currentTheme === 'dark') return true;
+    if (currentTheme === 'light') return false;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function applyTheme() {
+    const root = document.documentElement;
+    if (currentTheme === 'dark') root.setAttribute('data-theme', 'dark');
+    else if (currentTheme === 'light') root.setAttribute('data-theme', 'light');
+    else root.removeAttribute('data-theme'); // segueix el sistema
+    // actualitza els switches
+    const dark = isDarkActive();
+    document.querySelectorAll('.theme-toggle').forEach(sw => {
+        sw.setAttribute('aria-checked', dark ? 'true' : 'false');
+        const icon = sw.querySelector('.theme-icon');
+        if (icon) icon.textContent = dark ? '☾' : '☀';
+    });
+    // color de la barra del navegador
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', dark ? '#14181a' : '#f6f8f4');
+}
+function toggleTheme() {
+    // en tocar el switch, fixem explícitament (deixem de seguir el sistema)
+    currentTheme = isDarkActive() ? 'light' : 'dark';
+    localStorage.setItem('cartly-theme', currentTheme);
+    applyTheme();
+}
+// si l'usuari no ha forçat res, reacciona als canvis del sistema
+if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (!currentTheme) applyTheme();
+    });
 }
 
 const DEFAULT_CATEGORIES = ['fruit_veg', 'meat', 'fish', 'dairy', 'bakery', 'pantry', 'frozen', 'drinks', 'plant_based', 'cleaning', 'hygiene'];
@@ -1418,8 +1544,11 @@ function getColorForCategory(categoryKey) {
 }
 
 function persistData() {
-    if (isFirebaseEnabled && databaseReference) {
-        databaseReference.set({ items: appState.items, categories: appState.categories });
+    if (isFirebaseEnabled) {
+        // Amb backend, la font de veritat és Firebase. Mai escrivim al localStorage.
+        if (databaseReference) {
+            databaseReference.set({ items: appState.items, categories: appState.categories });
+        }
     } else {
         try {
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
@@ -1483,6 +1612,11 @@ function initializeFirebase() {
 function connectHouseData(username) {
     if (!isFirebaseEnabled || !database) return;
     if (databaseReference) databaseReference.off();
+    // parteix net: evita arrossegar dades locals o del compte anterior
+    appState.items = {};
+    appState.categories = [...DEFAULT_CATEGORIES];
+    appState.selectedCategory = '';
+    currentCategoryFilter = '__all__';
     databaseReference = database.ref('cases/' + normalizeUsername(username));
     setSyncStatus(true);
     databaseReference.on('value', (snapshot) => {
@@ -1543,11 +1677,17 @@ function openAccountModal() {
 function logOutUser() {
     closeModal('accountBack');
     localStorage.removeItem('cartly-user');
+    localStorage.removeItem('casa-nombre');
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
     document.getElementById('loginPass').value = '';
+    document.getElementById('loginUser').value = '';
     if (databaseReference) { databaseReference.off(); databaseReference = null; }
-    // neteja la vista perquè no quedin dades de la casa anterior
+    // neteja TOT l'estat lligat al compte anterior
     appState.items = {};
     appState.categories = [...DEFAULT_CATEGORIES];
+    appState.selectedCategory = '';
+    currentCategoryFilter = '__all__';
+    currentHouseName = '';
     toggleAuthView(false);
     if (isFirebaseEnabled && auth) {
         auth.signOut().finally(() => displayAuthScreen());
@@ -2308,6 +2448,8 @@ document.getElementById('manageClose').onclick = () => closeModal('manageBack');
 
 document.getElementById('langBtn').onclick = openLanguageSelector;
 document.getElementById('authLangBtn').onclick = openLanguageSelector;
+document.getElementById('themeToggle').onclick = toggleTheme;
+document.getElementById('authThemeToggle').onclick = toggleTheme;
 
 document.getElementById('loginBtn').onclick = handleUserLogin;
 document.getElementById('registerBtn').onclick = handleUserRegistration;
@@ -2444,21 +2586,24 @@ function enterApplication(username) {
 }
 
 (async function bootstrapApp() {
-    loadLocalData();
+    applyTheme();
     applyLanguagePreferences();
     
     const isFirebaseReady = await initializeFirebase();
     
     if (!isFirebaseReady) {
-        // Mode local (sense backend): comportament maqueta
+        // Mode local (sense backend): aquí sí carreguem del localStorage
+        loadLocalData();
         setSyncStatus(false);
         isFirebaseEnabled = false;
         const savedUser = localStorage.getItem('cartly-user');
         if (savedUser) { hideAuthScreen(); } else { displayAuthScreen(); }
+        renderApplicationUI();
+        renderAccountDetails();
         return;
     }
     
-    // Amb Firebase: l'estat de sessió mana
+    // Amb Firebase: l'estat de sessió mana; les dades vénen de la BD, no del localStorage
     auth.onAuthStateChanged((user) => {
         if (user) {
             const username = localStorage.getItem('cartly-user') || user.email.split('@')[0];
