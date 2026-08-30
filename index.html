@@ -10,6 +10,7 @@
     const firebaseConfig = {
         apiKey: "AIzaSyCfAs0BTsy4qQOld_mX-_4ev4rMQtiqh08",
         authDomain: "cartly-shoplist.firebaseapp.com",
+        databaseURL: "https://cartly-shoplist-default-rtdb.firebaseio.com",
         projectId: "cartly-shoplist",
         storageBucket: "cartly-shoplist.firebasestorage.app",
         messagingSenderId: "252592380108",
@@ -1270,6 +1271,9 @@ const TRANSLATIONS = {
         goLogin: 'Entra', goRegister: "Crea'n una",
         errFields: 'Omple tots els camps.', errPassMatch: 'Les contrasenyes no coincideixen.',
         errPassShort: 'La contrasenya ha de tenir 6 caràcters o més.',
+        errLoginFailed: "Usuari o contrasenya incorrectes.",
+        errRegisterFailed: "No s'ha pogut crear la casa. Torna-ho a provar.",
+        errUserTaken: "Aquest nom d'usuari ja existeix.",
         authSoon: "L'autenticació s'activarà en connectar el backend. De moment és una maqueta.",
         categories: { fruit_veg: 'Fruita i verdura', meat: 'Carn', fish: 'Peix', dairy: 'Làctics', bakery: 'Fleca', pantry: 'Rebost', frozen: 'Congelats', drinks: 'Begudes', plant_based: 'Plant-based', cleaning: 'Neteja', hygiene: 'Higiene' }
     },
@@ -1301,6 +1305,9 @@ const TRANSLATIONS = {
         goLogin: 'Entra', goRegister: 'Crea una',
         errFields: 'Rellena todos los campos.', errPassMatch: 'Las contraseñas no coinciden.',
         errPassShort: 'La contraseña debe tener 6 caracteres o más.',
+        errLoginFailed: 'Usuario o contraseña incorrectos.',
+        errRegisterFailed: 'No se ha podido crear la casa. Inténtalo de nuevo.',
+        errUserTaken: 'Ese nombre de usuario ya existe.',
         authSoon: 'La autenticación se activará al conectar el backend. De momento es una maqueta.',
         categories: { fruit_veg: 'Fruta y verdura', meat: 'Carne', fish: 'Pescado', dairy: 'Lácteos', bakery: 'Panadería', pantry: 'Despensa', frozen: 'Congelados', drinks: 'Bebidas', plant_based: 'Plant-based', cleaning: 'Limpieza', hygiene: 'Higiene' }
     },
@@ -1332,6 +1339,9 @@ const TRANSLATIONS = {
         goLogin: 'Log in', goRegister: 'Create one',
         errFields: 'Fill in all fields.', errPassMatch: "Passwords don't match.",
         errPassShort: 'Password must be 6 characters or more.',
+        errLoginFailed: 'Incorrect username or password.',
+        errRegisterFailed: 'Could not create the home. Please try again.',
+        errUserTaken: 'That username already exists.',
         authSoon: 'Authentication will be enabled once the backend is connected. For now it is a mockup.',
         categories: { fruit_veg: 'Fruit & veg', meat: 'Meat', fish: 'Fish', dairy: 'Dairy', bakery: 'Bakery', pantry: 'Pantry', frozen: 'Frozen', drinks: 'Drinks', plant_based: 'Plant-based', cleaning: 'Cleaning', hygiene: 'Hygiene' }
     }
@@ -1392,6 +1402,7 @@ let appState = {
 let currentCategoryFilter = '__all__';
 let database = null;
 let databaseReference = null;
+let auth = null;
 let isFirebaseEnabled = false;
 const LOCAL_STORAGE_KEY = 'lista-compra-v2';
 
@@ -1443,34 +1454,56 @@ function initializeFirebase() {
     const firebaseDatabaseScript = document.createElement('script');
     firebaseDatabaseScript.src = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js';
     
+    const firebaseAuthScript = document.createElement('script');
+    firebaseAuthScript.src = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js';
+    
     return new Promise((resolve) => {
         firebaseAppScript.onload = () => document.head.appendChild(firebaseDatabaseScript);
-        firebaseDatabaseScript.onload = () => {
+        firebaseDatabaseScript.onload = () => document.head.appendChild(firebaseAuthScript);
+        firebaseAuthScript.onload = () => {
             try {
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
-                databaseReference = database.ref('lista');
+                auth = firebase.auth();
                 isFirebaseEnabled = true;
-                setSyncStatus(true);
-                
-                databaseReference.on('value', (snapshot) => {
-                    const data = snapshot.val() || {};
-                    appState.items = data.items || {};
-                    appState.categories = data.categories || [...DEFAULT_CATEGORIES];
-                    migrateCategories();
-                    renderApplicationUI();
-                });
-                
                 resolve(true);
             } catch (error) {
                 console.error("Firebase init error", error);
                 resolve(false);
             }
         };
+        firebaseAuthScript.onerror = () => resolve(false);
         firebaseDatabaseScript.onerror = () => resolve(false);
         firebaseAppScript.onerror = () => resolve(false);
         document.head.appendChild(firebaseAppScript);
     });
+}
+
+// Connecta la llista d'aquesta casa (per usuari) i escolta canvis en temps real
+function connectHouseData(username) {
+    if (!isFirebaseEnabled || !database) return;
+    if (databaseReference) databaseReference.off();
+    databaseReference = database.ref('cases/' + normalizeUsername(username));
+    setSyncStatus(true);
+    databaseReference.on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        appState.items = data.items || {};
+        appState.categories = data.categories || [...DEFAULT_CATEGORIES];
+        migrateCategories();
+        renderApplicationUI();
+    });
+}
+
+// Normalitza el nom d'usuari: minúscules i només lletres/números/_
+// S'usa TANT com a clau de cases/{clau} COM per generar l'email intern,
+// perquè les regles de seguretat puguin comparar-los directament.
+function normalizeUsername(username) {
+    return username.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+}
+
+// Converteix un nom d'usuari en un email intern per a Firebase Auth
+function usernameToEmail(username) {
+    return normalizeUsername(username) + '@cartly.app';
 }
 
 let currentHouseName = localStorage.getItem('casa-nombre') || '';
@@ -1511,8 +1544,16 @@ function logOutUser() {
     closeModal('accountBack');
     localStorage.removeItem('cartly-user');
     document.getElementById('loginPass').value = '';
+    if (databaseReference) { databaseReference.off(); databaseReference = null; }
+    // neteja la vista perquè no quedin dades de la casa anterior
+    appState.items = {};
+    appState.categories = [...DEFAULT_CATEGORIES];
     toggleAuthView(false);
-    displayAuthScreen();
+    if (isFirebaseEnabled && auth) {
+        auth.signOut().finally(() => displayAuthScreen());
+    } else {
+        displayAuthScreen();
+    }
 }
 
 function applyLanguagePreferences() {
@@ -2331,7 +2372,21 @@ function handleUserLogin() {
         return;
     }
     
-    enterApplication(username);
+    if (!isFirebaseEnabled || !auth) {
+        // Sense backend: mode maqueta local
+        enterApplication(username);
+        return;
+    }
+    
+    const loginButton = document.getElementById('loginBtn');
+    loginButton.disabled = true;
+    auth.signInWithEmailAndPassword(usernameToEmail(username), password)
+        .then(() => { enterApplication(username); })
+        .catch((error) => {
+            displayAuthError('loginErr', translate('errLoginFailed'));
+            console.error(error.code, error.message);
+        })
+        .finally(() => { loginButton.disabled = false; });
 }
 
 function handleUserRegistration() {
@@ -2353,34 +2408,72 @@ function handleUserRegistration() {
         return;
     }
     
-    currentHouseName = houseName;
-    localStorage.setItem('casa-nombre', houseName);
-    enterApplication(username);
+    if (!isFirebaseEnabled || !auth) {
+        // Sense backend: mode maqueta local
+        currentHouseName = houseName;
+        localStorage.setItem('casa-nombre', houseName);
+        enterApplication(username);
+        return;
+    }
+    
+    const registerButton = document.getElementById('registerBtn');
+    registerButton.disabled = true;
+    auth.createUserWithEmailAndPassword(usernameToEmail(username), password)
+        .then(() => {
+            currentHouseName = houseName;
+            localStorage.setItem('casa-nombre', houseName);
+            // Desa el nom visible de la casa a la base de dades
+            return database.ref('cases/' + normalizeUsername(username) + '/houseName').set(houseName);
+        })
+        .then(() => { enterApplication(username); })
+        .catch((error) => {
+            const msg = error.code === 'auth/email-already-in-use'
+                ? translate('errUserTaken')
+                : translate('errRegisterFailed');
+            displayAuthError('regErr', msg);
+            console.error(error.code, error.message);
+        })
+        .finally(() => { registerButton.disabled = false; });
 }
 
 function enterApplication(username) {
     localStorage.setItem('cartly-user', username);
     hideAuthScreen();
+    connectHouseData(username);
     renderAccountDetails();
-    console.info('[Cartly] ' + translate('authSoon'));
 }
 
 (async function bootstrapApp() {
     loadLocalData();
     applyLanguagePreferences();
     
-    const savedUser = localStorage.getItem('cartly-user');
-    if (savedUser) {
-        hideAuthScreen();
-    } else {
-        displayAuthScreen();
-    }
-    
     const isFirebaseReady = await initializeFirebase();
+    
     if (!isFirebaseReady) {
+        // Mode local (sense backend): comportament maqueta
         setSyncStatus(false);
         isFirebaseEnabled = false;
+        const savedUser = localStorage.getItem('cartly-user');
+        if (savedUser) { hideAuthScreen(); } else { displayAuthScreen(); }
+        return;
     }
+    
+    // Amb Firebase: l'estat de sessió mana
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            const username = localStorage.getItem('cartly-user') || user.email.split('@')[0];
+            hideAuthScreen();
+            connectHouseData(username);
+            // recupera el nom visible de la casa des de la BD
+            database.ref('cases/' + normalizeUsername(username) + '/houseName').once('value').then((snap) => {
+                const hn = snap.val();
+                if (hn) { currentHouseName = hn; localStorage.setItem('casa-nombre', hn); }
+                renderAccountDetails();
+            });
+        } else {
+            displayAuthScreen();
+        }
+    });
 })();
 </script>
 </body>
