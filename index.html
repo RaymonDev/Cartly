@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#f6f8f4">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%20%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2222%22%20fill%3D%22%23ffffff%22/%3E%20%3Cpath%20d%3D%22M%2068%2032%20A%2026%2026%200%201%200%2068%2068%22%20fill%3D%22none%22%20stroke%3D%22%231c2a1f%22%20stroke-width%3D%2211%22%20stroke-linecap%3D%22round%22/%3E%20%3Ccircle%20cx%3D%2246%22%20cy%3D%2250%22%20r%3D%229%22%20fill%3D%22%233a9d5d%22/%3E%3C/svg%3E">
 <title>Cartly</title>
 
 <script>
@@ -33,6 +34,7 @@
         --check: #9aa7a0;
         --radius: 16px;
         --shadow: 0 1px 3px rgba(28,42,31,.06),0 4px 16px rgba(28,42,31,.05);
+        --bg-blur: rgba(246, 248, 244, .9);
     }
     /* Mode fosc neutre (accent verd). Per defecte segueix el sistema; el switch el força. */
     :root[data-theme="dark"] {
@@ -48,6 +50,7 @@
         --danger: #e26461;
         --check: #6b7a74;
         --shadow: 0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.35);
+        --bg-blur: rgba(20, 24, 26, .9);
     }
     @media (prefers-color-scheme: dark) {
         :root:not([data-theme="light"]) {
@@ -63,6 +66,7 @@
             --danger: #e26461;
             --check: #6b7a74;
             --shadow: 0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.35);
+            --bg-blur: rgba(20, 24, 26, .9);
         }
     }
     
@@ -89,7 +93,7 @@
         position: sticky;
         top: 0;
         z-index: 20;
-        background: rgba(246, 248, 244, .9);
+        background: var(--bg-blur);
         backdrop-filter: saturate(180%) blur(12px);
         -webkit-backdrop-filter: saturate(180%) blur(12px);
         border-bottom: 1px solid var(--line);
@@ -170,6 +174,7 @@
         transform: translateX(20px);
     }
     .theme-toggle .theme-icon { line-height: 1; }
+    .theme-toggle[aria-checked="true"] .theme-icon { color: #fff; }
     
     h1 {
         font-size: 23px;
