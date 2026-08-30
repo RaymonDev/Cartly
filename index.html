@@ -102,16 +102,14 @@
     
     .titlebar {
         display: grid;
-        grid-template-columns: auto 1fr auto;
+        grid-template-columns: 40px 1fr 40px;
         align-items: center;
         gap: 8px;
     }
-    .left-controls {
+    .title-spacer {
         grid-column: 1;
-        justify-self: start;
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
+        width: 40px;
+        height: 40px;
     }
     
     .lang-btn {
@@ -175,6 +173,45 @@
     }
     .theme-toggle .theme-icon { line-height: 1; }
     .theme-toggle[aria-checked="true"] .theme-icon { color: #fff; }
+
+    /* Files de preferències dins del popup del perfil */
+    .pref-rows {
+        margin-top: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .pref-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        padding: 14px 15px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--bg);
+        font-family: inherit;
+        cursor: pointer;
+        transition: .12s;
+    }
+    .pref-row:active { transform: scale(.99); }
+    .pref-row-static { cursor: default; }
+    .pref-row-static:active { transform: none; }
+    .pref-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--ink);
+    }
+    .pref-value {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--green-deep);
+    }
+    .pref-value .chev { font-size: 10px; color: var(--ink-soft); }
     
     h1 {
         font-size: 23px;
@@ -1213,12 +1250,7 @@
 
 <header>
     <div class="titlebar">
-        <div class="left-controls">
-            <button id="langBtn" class="lang-btn" aria-label="Idioma"><span id="langLabel">CAT</span><span class="chev">▾</span></button>
-            <button id="themeToggle" class="theme-toggle" role="switch" aria-checked="false" aria-label="Mode fosc">
-                <span class="theme-knob"><span class="theme-icon">☀</span></span>
-            </button>
-        </div>
+        <div class="title-spacer"></div>
         <h1 id="appTitle">Cartly<span class="dot">.</span></h1>
         <button id="avatar" class="avatar" aria-label="Cuenta de la casa">
             <span id="avatarInitial">·</span>
@@ -1293,6 +1325,20 @@
                 <p class="sub" id="accStatus" style="margin:2px 0 0">Modo local</p>
             </div>
         </div>
+
+        <div class="pref-rows">
+            <button id="prefLangRow" class="pref-row" type="button">
+                <span class="pref-label" id="prefLangLabel">Idioma</span>
+                <span class="pref-value"><span id="prefLangValue">CAT</span><span class="chev">▾</span></span>
+            </button>
+            <div class="pref-row pref-row-static">
+                <span class="pref-label" id="prefThemeLabel">Mode fosc</span>
+                <button id="themeToggle" class="theme-toggle" role="switch" aria-checked="false" aria-label="Mode fosc">
+                    <span class="theme-knob"><span class="theme-icon">☀</span></span>
+                </button>
+            </div>
+        </div>
+
         <div class="modal-btns" style="margin-top:16px">
             <button class="btn-ok" id="accLogout" style="background:var(--danger)">Cerrar sesión</button>
         </div>
@@ -1392,7 +1438,7 @@ const TRANSLATIONS = {
         synced: 'Sincronitzat', logout: 'Tancar sessió', house: 'La meva casa',
         loginSoon: "L'inici de sessió per casa s'activarà en connectar el backend.",
         inCart: (doneCount, totalCount) => `${doneCount} de ${totalCount} al carro`, clearNone: 'Treu el comprat',
-        clearCompletedItems: (count) => `Treure ${count} comprat${count > 1 ? 's' : ''}`, langLabel: 'Idioma',
+        clearCompletedItems: (count) => `Treure ${count} comprat${count > 1 ? 's' : ''}`, langLabel: 'Idioma', darkModeLabel: 'Mode fosc',
         authTagline: 'La compra de casa, compartida.',
         login: 'Entrar', register: 'Crear casa', signup: 'Registrar-se',
         userLabel: "Nom d'usuari", userPh: 'ex. la_meva_casa',
@@ -1426,7 +1472,7 @@ const TRANSLATIONS = {
         synced: 'Sincronizado', logout: 'Cerrar sesión', house: 'Mi casa',
         loginSoon: 'El inicio de sesión por casa se activará al conectar el backend.',
         inCart: (doneCount, totalCount) => `${doneCount} de ${totalCount} en el carro`, clearNone: 'Quita lo comprado',
-        clearCompletedItems: (count) => `Quitar ${count} comprado${count > 1 ? 's' : ''}`, langLabel: 'Idioma',
+        clearCompletedItems: (count) => `Quitar ${count} comprado${count > 1 ? 's' : ''}`, langLabel: 'Idioma', darkModeLabel: 'Modo oscuro',
         authTagline: 'La compra de casa, compartida.',
         login: 'Entrar', register: 'Crear casa', signup: 'Registrarse',
         userLabel: 'Nombre de usuario', userPh: 'ej. mi_casa',
@@ -1460,7 +1506,7 @@ const TRANSLATIONS = {
         synced: 'Synced', logout: 'Log out', house: 'My home',
         loginSoon: 'Household login will be enabled once the backend is connected.',
         inCart: (doneCount, totalCount) => `${doneCount} of ${totalCount} in the cart`, clearNone: 'Clear purchased',
-        clearCompletedItems: (count) => `Remove ${count} purchased`, langLabel: 'Language',
+        clearCompletedItems: (count) => `Remove ${count} purchased`, langLabel: 'Language', darkModeLabel: 'Dark mode',
         authTagline: 'The household groceries, shared.',
         login: 'Log in', register: 'Create home', signup: 'Sign up',
         userLabel: 'Username', userPh: 'e.g. my_home',
@@ -1703,7 +1749,9 @@ function logOutUser() {
 
 function applyLanguagePreferences() {
     document.documentElement.lang = currentLanguage;
-    document.getElementById('langLabel').textContent = LANGUAGE_LABELS[currentLanguage];
+    document.getElementById('prefLangValue').textContent = LANGUAGE_LABELS[currentLanguage];
+    document.getElementById('prefLangLabel').textContent = translate('langLabel');
+    document.getElementById('prefThemeLabel').textContent = translate('darkModeLabel');
     document.title = translate('title');
     document.getElementById('appTitle').innerHTML = `${translate('title')}<span class="dot">.</span>`;
     document.getElementById('tabList').textContent = translate('tabCesta');
@@ -2451,7 +2499,7 @@ document.getElementById('newCatOk').onclick = confirmNewCategoryCreation;
 document.getElementById('newCatCancel').onclick = () => closeModal('newCatBack');
 document.getElementById('manageClose').onclick = () => closeModal('manageBack');
 
-document.getElementById('langBtn').onclick = openLanguageSelector;
+document.getElementById('prefLangRow').onclick = openLanguageSelector;
 document.getElementById('authLangBtn').onclick = openLanguageSelector;
 document.getElementById('themeToggle').onclick = toggleTheme;
 document.getElementById('authThemeToggle').onclick = toggleTheme;
