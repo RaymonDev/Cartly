@@ -4,9 +4,9 @@
 
 **La compra de casa, compartida.**
 
-Una llista de la compra compartida per a tota la casa: afegeix productes durant la setmana, organitza'ls per categories i ratlla'ls al súper. Pensada per enganxar-la a la nevera amb un codi QR o amb una etiqueta NFC.
+Una llista de la compra compartida per a tota la casa: afegeix productes durant la setmana, organitza'ls per categories i ratlla'ls al súper. Pensada per enganxar-la a la nevera amb un codi QR.
 
-**[Obre l'app →](https://poligle.github.io/Cartly/)**
+🛒 **[Obre l'app →](https://poligle.github.io/Cartly/)**
 
 </div>
 
@@ -16,7 +16,7 @@ Una llista de la compra compartida per a tota la casa: afegeix productes durant 
 
 Cartly és una aplicació web d'una sola pàgina per gestionar la llista de la compra d'una casa entre diverses persones. Cada casa té el seu compte (usuari i contrasenya), i tots els qui hi entren comparteixen la mateixa llista sincronitzada en temps real.
 
-La idea original és generar un codi QR o etiqueta NFC que apunti a l'app i enganxar-lo a la nevera, perquè qualsevol de casa el pugui escanejar i afegir el que falta.
+La idea original és generar un codi QR que apunti a l'app i enganxar-lo a la nevera, perquè qualsevol de casa el pugui escanejar i afegir el que falta.
 
 ## Funcionalitats
 
